@@ -19,14 +19,14 @@ Copyright (C) 2012-2017 Kirill Kulakov, Jose Carlos Granja & Xerxes Ranby
 
 import os
 import sys
-
+import string
 
 class Hex:
     def __init__(self, fileName):
         self.memory = [0] * 0x8000
-        self.havememory = [0] * (0x8000/0x20)
+        self.havememory = [0] * int(0x8000/0x20)
         self.eeprom = [0] * 0x100
-        self.haveeeprom = [0] * (0x100/0x20)
+        self.haveeeprom = [0] * int(0x100/0x20)
 
         self.id = [0] * 0x8
 
@@ -40,10 +40,10 @@ class Hex:
 
         for i in range(0x8000):
             self.memory[i] = 0xFF
-            self.havememory[i/0x20] = 0
+            self.havememory[int(i/0x20)] = 0
         for i in range(0x100):
             self.eeprom[i] = 0
-            self.haveeeprom[i/0x20] = 0
+            self.haveeeprom[int(i/0x20)] = 0
         for i in range(0x8):
             self.id[i] = 0
             self.haveid = 0
@@ -51,11 +51,11 @@ class Hex:
             self.fuseStatus[i] = 0
 
         while True:
-            buf = hexFile.readline(128).translate(None, ':\n')
+            buf = hexFile.readline(128).replace(':','').replace('\n','')
             if buf == "":
                 break
             if self.reformat(buf) == 1:
-                print "Hex file not valid."
+                print("Hex file not valid.")
                 sys.exit(2)
         hexFile.close()
 
@@ -63,13 +63,13 @@ class Hex:
         return self.memory[address]
 
     def haveData(self, address):
-            return self.havememory[address/0x20]
+        return self.havememory[int(address/0x20)]
 
     def getEEPROM(self, address):
         return self.eeprom[address]
 
     def haveEEPROM(self, address):
-        return self.haveeeprom[address/0x20]
+        return self.haveeeprom[int(address/0x20)]
 
     def getID(self, address):
         return self.id[address]
@@ -89,7 +89,7 @@ class Hex:
 
         # comment
         if hexData.startswith(";"):
-            print hexData
+            print(hexData)
             return 0
 
         iSize, buf = int(buf[:2], 16), buf[2:]
@@ -133,21 +133,21 @@ class Hex:
 
             # Memory
             if (iAddress + self.offset) < 0x8000:
-                for i in range(iSize / 2):
+                for i in range(int(iSize / 2)):
                     buf = buf[2:]
 
                     self.memory[iAddress + i * 2 + self.offset] = int(buf[:2], 16)
                     if self.memory[iAddress + i * 2 + self.offset] == -1:
                         return 1
 
-                    self.havememory[(iAddress + i * 2 + self.offset)/0x20] = 1
+                    self.havememory[int((iAddress + i * 2 + self.offset)/0x20)] = 1
 
                     buf = buf[2:]
                     self.memory[iAddress + i * 2 + self.offset + 1] = int(buf[:2], 16)
                     if self.memory[iAddress + i * 2 + self.offset + 1] == -1:
                         return 1
 
-                    self.havememory[(iAddress + i * 2 + self.offset + 1)/0x20] = 1
+                    self.havememory[int((iAddress + i * 2 + self.offset + 1)/0x20)] = 1
 
             # Id
             elif iAddress + self.offset >= 0x200000 and iAddress + self.offset <= 0x200007:
@@ -171,7 +171,7 @@ class Hex:
 
             # EEPROM
             elif (iAddress + self.offset) >= 0xF00000 and iAddress + self.offset <= 0xF000FF:
-                for i in range(iSize / 2):
+                for i in range(int(iSize / 2)):
                     buf = buf[2:]
                     self.eeprom[iAddress + i * 2 + self.offset - 0xF00000] = int(buf[:2], 16)
                     if self.eeprom[iAddress + i * 2 + self.offset - 0xF00000] == -1:
@@ -188,6 +188,6 @@ class Hex:
 
             # Unknown data
             else:
-                print hex(iAddress + self.offset)
+                print(hex(iAddress + self.offset))
                 return 1
         return 0
