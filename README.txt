@@ -11,6 +11,8 @@ INSTALLATION:
 
  - Debian/Ubuntu: 
    apt install arduino python-serial
+ - Archlinux:
+   pacman -S arduino python-pyserial
 
 HOW TO:
 
